@@ -1,30 +1,64 @@
 ﻿using AsyncIO;
 using NetMQ;
 using NetMQ.Sockets;
+using System;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityScript.Steps;
 
 /// <summary>
 ///     Example of requester who only sends Hello. Very nice guy.
 ///     You can copy this class and modify Run() to suits your needs.
 ///     To use this class, you just instantiate, call Start() when you want to start and Stop() when you want to stop.
 /// </summary>
+///
+
 public class HelloRequester : RunAbleThread
 {
     /// <summary>
     ///     Request Hello message to server and receive message back. Do it 10 times.
     ///     Stop requesting when Running=false.
     /// </summary>
+    /// 
+
+    /// ParseReceivedData is used to parse the incoming jsonString from Python and deserialize the data into 
+    /// respective variables in Unity C#
+
+    [System.Serializable]
+    public class ParseReceivedData
+    {
+        public Dictionary<string, string> player_dict;
+        //public List<string> p1_list;
+        //public Tuple<string> p2_tuple;
+        //public string actions_str;
+        //public int states_num;
+
+        public static ParseReceivedData CreateFromJSON(string jsonString)
+        {
+            return JsonUtility.FromJson<ParseReceivedData>(jsonString);
+        }
+
+        public void PrintOutput()
+        {
+            foreach (KeyValuePair<String, String> kvp in this.player_dict)
+            {
+                Debug.Log("Dict = {0} : {1}" + kvp.Key.ToString() + kvp.Value.ToString());
+            }
+        }
+
+    }
+
     protected override void Run()
     {
         ForceDotNet.Force(); // this line is needed to prevent unity freeze after one use, not sure why yet
         using (RequestSocket client = new RequestSocket())
         {
-            client.Connect("tcp://localhost:5555");
+            client.Connect("tcp://localhost:9999");
 
             for (int i = 0; i < 10 && Running; i++)
             {
                 Debug.Log("Sending Hello");
-                client.SendFrame("Hello");
+                client.SendFrame("Hello this is your C# client");
                 // ReceiveFrameString() blocks the thread until you receive the string, but TryReceiveFrameString()
                 // do not block the thread, you can try commenting one and see what the other does, try to reason why
                 // unity freezes when you use ReceiveFrameString() and play and stop the scene without running the server
@@ -38,7 +72,14 @@ public class HelloRequester : RunAbleThread
                     if (gotMessage) break;
                 }
 
-                if (gotMessage) Debug.Log("Received " + message);
+                if (gotMessage)
+                {
+                    Debug.Log("Received " + message);
+                    ParseReceivedData myParser = ParseReceivedData.CreateFromJSON(message);
+                    myParser.PrintOutput();
+
+                }
+
             }
         }
 
