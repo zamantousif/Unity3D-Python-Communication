@@ -1,10 +1,10 @@
 ﻿using AsyncIO;
 using NetMQ;
 using NetMQ.Sockets;
+using SimpleJSON;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityScript.Steps;
 
 /// <summary>
 ///     Example of requester who only sends Hello. Very nice guy.
@@ -24,29 +24,6 @@ public class HelloRequester : RunAbleThread
     /// ParseReceivedData is used to parse the incoming jsonString from Python and deserialize the data into 
     /// respective variables in Unity C#
 
-    [System.Serializable]
-    public class ParseReceivedData
-    {
-        public Dictionary<string, string> player_dict;
-        //public List<string> p1_list;
-        //public Tuple<string> p2_tuple;
-        //public string actions_str;
-        //public int states_num;
-
-        public static ParseReceivedData CreateFromJSON(string jsonString)
-        {
-            return JsonUtility.FromJson<ParseReceivedData>(jsonString);
-        }
-
-        public void PrintOutput()
-        {
-            foreach (KeyValuePair<String, String> kvp in this.player_dict)
-            {
-                Debug.Log("Dict = {0} : {1}" + kvp.Key.ToString() + kvp.Value.ToString());
-            }
-        }
-
-    }
 
     protected override void Run()
     {
@@ -75,8 +52,11 @@ public class HelloRequester : RunAbleThread
                 if (gotMessage)
                 {
                     Debug.Log("Received " + message);
-                    ParseReceivedData myParser = ParseReceivedData.CreateFromJSON(message);
-                    myParser.PrintOutput();
+                    var myData = JSON.Parse(message);
+                    foreach(var kvp in myData)
+                    {
+                        Debug.Log("Parsed Data = " + kvp.Key + " : " + kvp.Value.Value);
+                    }
 
                 }
 

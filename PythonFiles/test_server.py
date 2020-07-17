@@ -12,34 +12,10 @@ while True:
     message = socket.recv()
     print("Received request: %s" % message)
 
-    # Do some 'work'
-    # time.sleep(1)
+    # create a Python dictionary to be serialized and sent
+    data = {"name":"state", "timestep":1, "p1_villager_health":100, "p1_knight_health":50, "p1_archer_health":20.25, \
+            "p2_tower1_health":10.5, "p2_tower2_health":27.75, "p1_stone":400, "p1_castle_build":"False"}
 
-    # create Python objects to be serialized and sent
-    # dict
-    player_dict = {"p1": "player1", "p2": "player2"}
-    # list
-    p1_list = ["archer", "knight", "villager"]
-    # tuple
-    p2_tuple = ("tower1", "tower2")
-    # string
-    actions_str = "move" + " " + "suicide"
-    # numbers
-    states_num = 1000
-
-    # serialize to JSON prior to sending
-    json_dict = json.dumps(player_dict)
-    json_list = json.dumps(p1_list)
-    json_tuple = json.dumps(p2_tuple)
-    json_str = json.dumps(actions_str)
-    json_num = json.dumps(states_num)
-
-    # print(json_dict)
-    # print(json_list)
-    # print(json_tuple)
-    # print(json_str)
-    # print(json_num)
-
-    # socket.send(b"World")
-    socket.send_string("%s" % (json_dict))
+    json_data = json.dumps(data, indent = 4)
+    socket.send_string("%s" % (json_data))
     
